@@ -1,12 +1,19 @@
 package com.grcp.demo.votingapp.pool.gateway;
 
 import com.grcp.demo.votingapp.pool.domain.Pool;
+import com.grcp.demo.votingapp.pool.domain.PoolId;
+import com.grcp.demo.votingapp.pool.domain.PoolOption;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PoolGateway {
 
-    Pool save(Pool pool);
+    Pool savePool(Pool pool);
 
-    Optional<Pool> findById(Long id);
+    Optional<Pool> findPoolById(PoolId id);
+
+    List<PoolOption> findPoolOptionsByPoolId(PoolId id);
+
+    void savePoolOptions(List<PoolOption> options);
 }

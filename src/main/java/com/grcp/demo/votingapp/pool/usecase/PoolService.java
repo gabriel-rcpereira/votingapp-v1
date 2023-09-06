@@ -4,7 +4,6 @@ import com.grcp.demo.votingapp.pool.domain.Pool;
 import com.grcp.demo.votingapp.pool.domain.PoolId;
 import com.grcp.demo.votingapp.pool.domain.PoolOption;
 import com.grcp.demo.votingapp.pool.gateway.PoolGateway;
-import com.grcp.demo.votingapp.pool.gateway.PoolOptionGateway;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,11 +16,9 @@ public class PoolService {
 
     private final PoolGateway poolGateway;
 
-    private final PoolOptionGateway poolOptionGateway;
-
     @Transactional
     public void createPool(Pool pool) {
-        Pool savedPool = poolGateway.save(pool);
+        Pool savedPool = poolGateway.savePool(pool);
         saveOptions(savedPool);
     }
 
@@ -30,15 +27,15 @@ public class PoolService {
     }
 
     public Pool fetchPool(PoolId id) {
-        Pool pool = poolGateway.findById(id.value())
+        Pool pool = poolGateway.findPoolById(id)
                 .orElseThrow(() -> new RuntimeException("Not found"));
-        List<PoolOption> options = poolOptionGateway.findByPoolId(pool.id());
+        List<PoolOption> options = poolGateway.findPoolOptionsByPoolId(pool.id());
         return new Pool(pool.id(), pool.description(), pool.expiredAt(), options);
     }
 
     private void saveOptions(Pool savedPool) {
         List<PoolOption> optionsWithPoolId = updatePoolIdInOptions(savedPool);
-        poolOptionGateway.save(optionsWithPoolId);
+        poolGateway.savePoolOptions(optionsWithPoolId);
     }
 
     private List<PoolOption> updatePoolIdInOptions(Pool savedPool) {

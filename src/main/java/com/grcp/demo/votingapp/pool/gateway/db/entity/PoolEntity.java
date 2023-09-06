@@ -19,4 +19,5 @@ public class PoolEntity {
     private LocalDateTime expiredAt;
     @Version
     private Integer version;
+
 }
