@@ -4,12 +4,15 @@ import com.grcp.demo.votingapp.pool.domain.Pool;
 import com.grcp.demo.votingapp.pool.domain.PoolId;
 import com.grcp.demo.votingapp.pool.domain.PoolOption;
 import com.grcp.demo.votingapp.pool.gateway.PoolGateway;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
+@Validated
 @RequiredArgsConstructor
 @Service
 public class PoolService {
@@ -17,7 +20,7 @@ public class PoolService {
     private final PoolGateway poolGateway;
 
     @Transactional
-    public void createPool(Pool pool) {
+    public void createPool(@Valid Pool pool) {
         Pool savedPool = poolGateway.savePool(pool);
         saveOptions(savedPool);
     }
@@ -26,7 +29,7 @@ public class PoolService {
         fetchPool(id);
     }
 
-    public Pool fetchPool(PoolId id) {
+    public Pool fetchPool(@Valid PoolId id) {
         Pool pool = poolGateway.findPoolById(id)
                 .orElseThrow(() -> new RuntimeException("Not found"));
         List<PoolOption> options = poolGateway.findPoolOptionsByPoolId(pool.id());

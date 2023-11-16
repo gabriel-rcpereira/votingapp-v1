@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static com.grcp.demo.votingapp.vote.entrypoint.mapper.VoteDtoMapper.*;
+
 @RequiredArgsConstructor
 @Validated
 @RestController
@@ -30,10 +32,10 @@ public class VoteController {
     @PostMapping("/api/v1/pools/{poolId}/votes")
     public ResponseEntity<?> postNewVote(
             @PathVariable("poolId") Long poolId,
-            @RequestBody @Valid VoteRequestDto request) {
+            @RequestBody VoteRequestDto request) {
         PoolOptionId typedPoolOptionId = new PoolOptionId(request.poolOptionId());
-        PoolId typedPoolId = new PoolId(poolId);
         Vote newVote = new Vote(typedPoolOptionId);
+        PoolId typedPoolId = new PoolId(poolId);
         voteService.registerNewVote(typedPoolId, newVote);
         return ResponseEntity.noContent().build();
     }
@@ -42,16 +44,9 @@ public class VoteController {
     public ResponseEntity<AggregatedVotingResultResponseDto> getVotes(@PathVariable("poolId") Long poolId) {
         PoolId typePoolId = new PoolId(poolId);
         AggregatedVotingResult aggregatedVotingResult = voteService.fetchAggregatedVotingResult(typePoolId);
-        List<VotingResultResponseDto> votingResultsResponse = aggregatedVotingResult.votingResults().stream()
-                .map(votingResult -> new VotingResultResponseDto(
-                        votingResult.poolOptionId().value(),
-                        votingResult.description(),
-                        votingResult.totalVotes(),
-                        votingResult.percentage()))
-                .toList();
-        return ResponseEntity.ok(
-                new AggregatedVotingResultResponseDto(
-                        aggregatedVotingResult.totalPoolVotes(),
-                        votingResultsResponse));
+        List<VotingResultResponseDto> votingResultsResponse = toVotingResultsResponseDto(aggregatedVotingResult);
+        return ResponseEntity.ok(toAggregatedVotingResultResponseDto(
+                aggregatedVotingResult,
+                votingResultsResponse));
     }
 }

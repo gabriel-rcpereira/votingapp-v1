@@ -11,11 +11,19 @@ import com.grcp.demo.votingapp.vote.entrypoint.model.VotingResultResponseDto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,7 +35,7 @@ public class IntegratedTest extends ApplicationTests {
     @DisplayName("Should create a pool successfully given valid parameters")
     @RepeatedTest(3)
     void shouldCreateSuccessfullyGivenValidParameters() {
-        LocalDateTime expiredAt = LocalDateTime.now().plus(3, ChronoUnit.DAYS);
+        LocalDateTime expiredAt = LocalDateTime.now().plusDays(3);
         PoolRequestDto poolRequestDto = new PoolRequestDto(
                 "my new pool",
                 expiredAt,
@@ -69,10 +77,22 @@ public class IntegratedTest extends ApplicationTests {
     }
 
     @DisplayName("Should create a new pool and register its votes")
-    @RepeatedTest(2)
-    void shouldCreateAndRegisterVotesSuccessfullyGivenValidParameters() {
+    @ParameterizedTest
+    @CsvSource({
+            "9, 3, 1, 5, 33.33, 11.11, 55.56",
+            "20, 10, 3, 7, 50.0, 15.0, 35.0",
+            "0, 0, 0, 0, 0.0, 0.0, 0.0",
+            "100000, 50000, 35000, 15000, 50.0, 35.0, 15.0"})
+    void shouldCreateAndRegisterVotesSuccessfullyGivenValidParameters(
+            int numberOfVotes,
+            int numberOfVotesFirsOption,
+            int numberOfVotesSecondOption,
+            int numberOfVotesThirdOption,
+            Double percentageOfVoteFirsOption,
+            Double percentageOfVoteSecondOption,
+            Double percentageOfVoteThirdOption) {
         // CREATE POOL
-        LocalDateTime expiredAt = LocalDateTime.now().plus(3, ChronoUnit.DAYS);
+        LocalDateTime expiredAt = LocalDateTime.now().plusDays(3);
         PoolRequestDto poolRequestDto = new PoolRequestDto(
                 "my new pool",
                 expiredAt,
@@ -95,38 +115,38 @@ public class IntegratedTest extends ApplicationTests {
 
         // REGISTER VOTES
         Long firstPoolOptionId = actualPoolResponse.options().get(0).id();
-        registerAmountOfVotes(3, postId, firstPoolOptionId);
+        registerAmountOfVotes(numberOfVotesFirsOption, postId, firstPoolOptionId);
 
         Long secondPoolOptionId = actualPoolResponse.options().get(1).id();
-        registerAmountOfVotes(1, postId, secondPoolOptionId);
+        registerAmountOfVotes(numberOfVotesSecondOption, postId, secondPoolOptionId);
 
         Long thirdPoolOptionId = actualPoolResponse.options().get(2).id();
-        registerAmountOfVotes(5, postId, thirdPoolOptionId);
+        registerAmountOfVotes(numberOfVotesThirdOption, postId, thirdPoolOptionId);
 
         // FETCH POOL RESULT
         AggregatedVotingResultResponseDto aggregatedVotingResultResponse = restTemplate.getForObject(
                 baseUrl() + "/api/v1/pools/%s/votes".formatted(postId),
                 AggregatedVotingResultResponseDto.class);
 
-        assertThat(aggregatedVotingResultResponse.totalPoolVotes()).isEqualTo(9);
+        assertThat(aggregatedVotingResultResponse.totalPoolVotes()).isEqualTo(numberOfVotes);
         assertThat(aggregatedVotingResultResponse.votingResults())
                 .hasSize(4)
                 .containsExactlyInAnyOrder(
                         new VotingResultResponseDto(
                                 actualPoolResponse.options().get(0).id(),
                                 actualPoolResponse.options().get(0).description(),
-                                3,
-                                33.33),
+                                numberOfVotesFirsOption,
+                                percentageOfVoteFirsOption),
                         new VotingResultResponseDto(
                                 actualPoolResponse.options().get(1).id(),
                                 actualPoolResponse.options().get(1).description(),
-                                1,
-                                11.11),
+                                numberOfVotesSecondOption,
+                                percentageOfVoteSecondOption),
                         new VotingResultResponseDto(
                                 actualPoolResponse.options().get(2).id(),
                                 actualPoolResponse.options().get(2).description(),
-                                5,
-                                55.56),
+                                numberOfVotesThirdOption,
+                                percentageOfVoteThirdOption),
                         new VotingResultResponseDto(
                                 actualPoolResponse.options().get(3).id(),
                                 actualPoolResponse.options().get(3).description(),
@@ -136,10 +156,30 @@ public class IntegratedTest extends ApplicationTests {
 
     private void registerAmountOfVotes(int amount, String postId, Long poolOptionId) {
         VoteRequestDto voteOne = new VoteRequestDto(poolOptionId);
+        List<CompletableFuture<URI>> all = new ArrayList<>();
+        ExecutorService executorService = Executors.newFixedThreadPool(5);
+
         for (int i = 0; i < amount; i++) {
-            restTemplate.postForLocation(
-                    baseUrl() + "/api/v1/pools/%s/votes".formatted(postId),
-                    voteOne);
+            CompletableFuture<URI> asyncRequest = CompletableFuture.supplyAsync(() ->
+                    restTemplate.postForLocation(
+                            baseUrl() + "/api/v1/pools/%s/votes".formatted(postId),
+                            voteOne),
+                    executorService);
+            all.add(asyncRequest);
+
+//            restTemplate.postForLocation(
+//                    baseUrl() + "/api/v1/pools/%s/votes".formatted(postId),
+//                    voteOne);
         }
+
+        if (all.isEmpty()) {
+            return;
+        }
+
+        executorService.shutdown();
+        while (!executorService.isTerminated()) {
+
+        }
+
     }
 }

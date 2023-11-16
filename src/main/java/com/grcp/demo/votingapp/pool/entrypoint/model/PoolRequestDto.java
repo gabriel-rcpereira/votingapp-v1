@@ -9,11 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record PoolRequestDto (
-        @NotBlank
         String description,
-        @NotNull
         LocalDateTime expiredAt,
-        @NotEmpty
-        @Valid
         List<PoolOptionRequestDto> options) {
 }

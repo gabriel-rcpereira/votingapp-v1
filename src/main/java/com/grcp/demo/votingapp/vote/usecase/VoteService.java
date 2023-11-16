@@ -8,42 +8,47 @@ import com.grcp.demo.votingapp.vote.domain.PoolOptionVotingResult;
 import com.grcp.demo.votingapp.vote.domain.Vote;
 import com.grcp.demo.votingapp.vote.domain.VotingResult;
 import com.grcp.demo.votingapp.vote.gateway.VoteGateway;
+import com.grcp.demo.votingapp.vote.mapper.VoteMapper;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
+@Validated
 @RequiredArgsConstructor
 @Service
 public class VoteService {
 
     private static final double PERCENTAGE_BASE = 100.0;
+    private static final int MIN_NUMBER_TO_DIVIDE = 1;
 
     private final VoteGateway voteGateway;
     private final PoolService poolService;
 
-    public void registerNewVote(PoolId poolId, Vote vote) {
+    public void registerNewVote(@Valid PoolId poolId, @Valid Vote vote) {
         Pool pool = poolService.fetchPool(poolId);
         if (pool.isExpired()) {
-            throw new RuntimeException("Pool already expired");
+            throw new IllegalArgumentException("Pool already expired");
         }
 
         if (!pool.doesPoolOptionBelongToPool(vote.poolOptionId())) {
-            throw new RuntimeException("Option does not belong to Pool %s".formatted(poolId));
+            throw new IllegalArgumentException("Option does not belong to Pool %s".formatted(poolId));
         }
 
         voteGateway.saveVote(vote);
     }
 
-    public AggregatedVotingResult fetchAggregatedVotingResult(PoolId poolId) {
+    public AggregatedVotingResult fetchAggregatedVotingResult(@Valid PoolId poolId) {
         poolService.validatePoolExists(poolId);
         List<PoolOptionVotingResult> poolOptionResults = voteGateway.findPoolOptionVotingResultsByPoolId(
                 poolId);
         long totalPoolVotes = calculateTotalPoolVotes(poolOptionResults);
         List<VotingResult> votingResults = computeVotingResults(totalPoolVotes, poolOptionResults);
-        return toAggregatedVotingResult(totalPoolVotes, votingResults);
+        return VoteMapper.toAggregatedVotingResult(totalPoolVotes, votingResults);
     }
 
     private List<VotingResult> computeVotingResults(
@@ -62,23 +67,7 @@ public class VoteService {
         Double sharedPoolOptionPercentage = calculateSharedPoolOptionPercentage(
                 totalPoolVotes,
                 poolOptionVotingResult.totalVotes());
-        return toVotingResult(poolOptionVotingResult, sharedPoolOptionPercentage);
-    }
-
-    private VotingResult toVotingResult(
-            PoolOptionVotingResult poolOptionVotingResult,
-            Double sharedPoolOptionPercentage) {
-        return new VotingResult(
-                poolOptionVotingResult.poolOptionId(),
-                poolOptionVotingResult.description(),
-                poolOptionVotingResult.totalVotes(),
-                sharedPoolOptionPercentage);
-    }
-
-    private AggregatedVotingResult toAggregatedVotingResult(
-            long totalPoolVotes,
-            List<VotingResult> votingResults) {
-        return new AggregatedVotingResult(totalPoolVotes, votingResults);
+        return VoteMapper.toVotingResult(poolOptionVotingResult, sharedPoolOptionPercentage);
     }
 
     private long calculateTotalPoolVotes(List<PoolOptionVotingResult> poolOptionVotingResults) {
@@ -89,7 +78,7 @@ public class VoteService {
     }
 
     private Double calculateSharedPoolOptionPercentage(long totalPoolVotes, Integer totalVotes) {
-        return BigDecimal.valueOf((totalVotes * PERCENTAGE_BASE) / totalPoolVotes)
+        return BigDecimal.valueOf((totalVotes * PERCENTAGE_BASE) / Math.max(MIN_NUMBER_TO_DIVIDE, totalPoolVotes))
                 .setScale(2, RoundingMode.HALF_UP)
                 .doubleValue();
     }
