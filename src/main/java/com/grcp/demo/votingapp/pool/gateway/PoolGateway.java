@@ -9,11 +9,9 @@ import java.util.Optional;
 
 public interface PoolGateway {
 
-    Pool savePool(Pool pool);
+    void savePool(Pool pool);
 
     Optional<Pool> findPoolById(PoolId id);
 
     List<PoolOption> findPoolOptionsByPoolId(PoolId id);
-
-    void savePoolOptions(List<PoolOption> options);
 }

@@ -6,7 +6,7 @@ In addition to the requirements listed below, I'd like to give a chance to AI as
 
 - [x] Remove Pool Options Gateway
 - [x] Validate the domain and endpoint attributes according to their needs
-- [ ] Replace the current exceptions with customized ones
+- [x] Replace the current exceptions with customized ones
 - [ ] Handle the Pool and Pool Options according to the relation Aggregate and Aggregate Root
 - [ ] Implement the controller advice and define a well-structured error response.\
 The error message must contain the error code and details.\

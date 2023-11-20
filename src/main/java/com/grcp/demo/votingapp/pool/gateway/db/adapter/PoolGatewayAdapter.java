@@ -24,10 +24,10 @@ public class PoolGatewayAdapter implements PoolGateway {
     private final PoolOptionRepository poolOptionRepository;
 
     @Override
-    public Pool savePool(Pool pool) {
+    public void savePool(Pool pool) {
         PoolEntity poolEntity = toEntity(pool);
-        PoolEntity savedPoolEntity = poolRepository.save(poolEntity);
-        return toDomain(pool, savedPoolEntity);
+        poolRepository.save(poolEntity);
+        savePoolOptions(pool.options());
     }
 
     @Override
@@ -43,8 +43,7 @@ public class PoolGatewayAdapter implements PoolGateway {
                 .toList();
     }
 
-    @Override
-    public void savePoolOptions(List<PoolOption> options) {
+    private void savePoolOptions(List<PoolOption> options) {
         List<PoolOptionEntity> poolOptionsEntity = toEntities(options);
         poolOptionRepository.saveAll(poolOptionsEntity);
     }

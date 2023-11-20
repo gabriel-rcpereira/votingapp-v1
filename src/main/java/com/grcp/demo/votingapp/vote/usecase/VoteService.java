@@ -3,10 +3,12 @@ package com.grcp.demo.votingapp.vote.usecase;
 import com.grcp.demo.votingapp.pool.domain.Pool;
 import com.grcp.demo.votingapp.pool.domain.PoolId;
 import com.grcp.demo.votingapp.pool.usecase.PoolService;
+import com.grcp.demo.votingapp.shared.exception.BusinessException;
 import com.grcp.demo.votingapp.vote.domain.AggregatedVotingResult;
 import com.grcp.demo.votingapp.vote.domain.PoolOptionVotingResult;
 import com.grcp.demo.votingapp.vote.domain.Vote;
 import com.grcp.demo.votingapp.vote.domain.VotingResult;
+import com.grcp.demo.votingapp.vote.domain.error.VoteError;
 import com.grcp.demo.votingapp.vote.gateway.VoteGateway;
 import com.grcp.demo.votingapp.vote.mapper.VoteMapper;
 import jakarta.validation.Valid;
@@ -32,11 +34,11 @@ public class VoteService {
     public void registerNewVote(@Valid PoolId poolId, @Valid Vote vote) {
         Pool pool = poolService.fetchPool(poolId);
         if (pool.isExpired()) {
-            throw new IllegalArgumentException("Pool already expired");
+            throw new BusinessException(VoteError.EXPIRED_POLL);
         }
 
         if (!pool.doesPoolOptionBelongToPool(vote.poolOptionId())) {
-            throw new IllegalArgumentException("Option does not belong to Pool %s".formatted(poolId));
+            throw new BusinessException(VoteError.OPTION_DOES_NOT_BELONG_TO_POOL, poolId.value());
         }
 
         voteGateway.saveVote(vote);

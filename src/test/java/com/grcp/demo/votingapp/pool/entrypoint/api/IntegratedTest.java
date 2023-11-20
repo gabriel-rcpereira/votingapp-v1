@@ -157,7 +157,7 @@ public class IntegratedTest extends ApplicationTests {
     private void registerAmountOfVotes(int amount, String postId, Long poolOptionId) {
         VoteRequestDto voteOne = new VoteRequestDto(poolOptionId);
         List<CompletableFuture<URI>> all = new ArrayList<>();
-        ExecutorService executorService = Executors.newFixedThreadPool(5);
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
 
         for (int i = 0; i < amount; i++) {
             CompletableFuture<URI> asyncRequest = CompletableFuture.supplyAsync(() ->
@@ -166,10 +166,6 @@ public class IntegratedTest extends ApplicationTests {
                             voteOne),
                     executorService);
             all.add(asyncRequest);
-
-//            restTemplate.postForLocation(
-//                    baseUrl() + "/api/v1/pools/%s/votes".formatted(postId),
-//                    voteOne);
         }
 
         if (all.isEmpty()) {

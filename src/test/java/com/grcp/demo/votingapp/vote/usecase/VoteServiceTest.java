@@ -6,6 +6,7 @@ import com.grcp.demo.votingapp.pool.domain.PoolId;
 import com.grcp.demo.votingapp.pool.domain.PoolOptionId;
 import com.grcp.demo.votingapp.pool.fixture.PoolFixture;
 import com.grcp.demo.votingapp.pool.usecase.PoolService;
+import com.grcp.demo.votingapp.shared.exception.BusinessException;
 import com.grcp.demo.votingapp.vote.domain.AggregatedVotingResult;
 import com.grcp.demo.votingapp.vote.domain.PoolOptionVotingResult;
 import com.grcp.demo.votingapp.vote.domain.Vote;
@@ -110,7 +111,8 @@ class VoteServiceTest {
 
             // when
             assertThatThrownBy(() -> voteService.registerNewVote(poolId, newVote))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessage("Pool already expired");
 
             // then
             verify(poolService, times(1)).fetchPool(eq(poolId));
@@ -129,7 +131,8 @@ class VoteServiceTest {
 
             // when
             assertThatThrownBy(() -> voteService.registerNewVote(validPoolId, newVote))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessage(String.format("Option does not belong to Pool %s", validPoolId.value()));
 
             // then
             verify(poolService, times(1)).fetchPool(eq(validPoolId));
