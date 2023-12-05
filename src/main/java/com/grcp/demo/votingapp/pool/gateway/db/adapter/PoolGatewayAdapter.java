@@ -33,11 +33,14 @@ public class PoolGatewayAdapter implements PoolGateway {
     @Override
     public Optional<Pool> findPoolById(PoolId id) {
         return poolRepository.findById(id.value())
-                .map(PoolGatewayAdapter::toDomain);
+                .map(PoolGatewayAdapter::toDomain)
+                .map(it -> {
+                    List<PoolOption> poolOptions = findPoolOptionsByPoolId(id);
+                    return toDomain(it, poolOptions);
+                });
     }
 
-    @Override
-    public List<PoolOption> findPoolOptionsByPoolId(PoolId id) {
+    private List<PoolOption> findPoolOptionsByPoolId(PoolId id) {
         return poolOptionRepository.findByPoolId(id.value()).stream()
                 .map(PoolGatewayAdapter::toDomain)
                 .toList();
@@ -56,12 +59,12 @@ public class PoolGatewayAdapter implements PoolGateway {
                 null);
     }
 
-    private static Pool toDomain(Pool pool, PoolEntity savedPoolEntity) {
+    private static Pool toDomain(Pool pool, List<PoolOption> poolOptions) {
         return new Pool(
-                new PoolId(savedPoolEntity.getId()),
-                savedPoolEntity.getDescription(),
-                savedPoolEntity.getExpiredAt(),
-                pool.options());
+                pool.id(),
+                pool.description(),
+                pool.expiredAt(),
+                poolOptions);
     }
 
     private static PoolEntity toEntity(Pool pool) {

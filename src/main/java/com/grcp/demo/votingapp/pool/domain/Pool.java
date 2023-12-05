@@ -9,15 +9,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record Pool(
-        @NotNull
+        @NotNull(message = "001.003")
         @Valid
         PoolId id,
-        @NotBlank
+        @NotBlank(message = "001.004")
         String description,
-        @NotNull
-        @Future
+        @NotNull(message = "001.005")
+        @Future(message = "001.006")
         LocalDateTime expiredAt,
-        @NotNull
+        @NotNull(message = "001.007")
         @Valid
         List<PoolOption> options) {
 

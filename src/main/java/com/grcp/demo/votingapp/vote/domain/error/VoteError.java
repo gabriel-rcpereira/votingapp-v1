@@ -1,10 +1,9 @@
 package com.grcp.demo.votingapp.vote.domain.error;
 
-import com.grcp.demo.votingapp.shared.exception.BaseErrorDetail;
-import com.grcp.demo.votingapp.shared.exception.ModuleErrorCode;
+import com.grcp.demo.votingapp.shared.error.model.BaseErrorDetail;
 import lombok.RequiredArgsConstructor;
 
-import static com.grcp.demo.votingapp.shared.exception.ModuleErrorCode.*;
+import static com.grcp.demo.votingapp.shared.error.model.ModuleErrorCode.*;
 
 @RequiredArgsConstructor
 public enum VoteError implements BaseErrorDetail {

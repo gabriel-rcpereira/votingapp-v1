@@ -12,6 +12,4 @@ public interface PoolGateway {
     void savePool(Pool pool);
 
     Optional<Pool> findPoolById(PoolId id);
-
-    List<PoolOption> findPoolOptionsByPoolId(PoolId id);
 }

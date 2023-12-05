@@ -5,20 +5,26 @@ import com.grcp.demo.votingapp.pool.entrypoint.model.PoolOptionRequestDto;
 import com.grcp.demo.votingapp.pool.entrypoint.model.PoolOptionResponseDto;
 import com.grcp.demo.votingapp.pool.entrypoint.model.PoolRequestDto;
 import com.grcp.demo.votingapp.pool.entrypoint.model.PoolResponseDto;
+import com.grcp.demo.votingapp.shared.error.handler.model.ApplicationErrorResponse;
+import com.grcp.demo.votingapp.shared.error.handler.model.DetailedErrorResponse;
 import com.grcp.demo.votingapp.vote.entrypoint.model.AggregatedVotingResultResponseDto;
 import com.grcp.demo.votingapp.vote.entrypoint.model.VoteRequestDto;
 import com.grcp.demo.votingapp.vote.entrypoint.model.VotingResultResponseDto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -154,6 +160,67 @@ public class IntegratedTest extends ApplicationTests {
                                 0.0));
     }
 
+    @DisplayName("Should not create a pool given invalid parameters pool options descriptions")
+    @Test
+    void shouldNotCreateAPoolWithInvalidPoolOptionsDescriptions() {
+        // given
+        LocalDateTime expiredAt = LocalDateTime.now().plusDays(3);
+        PoolRequestDto poolRequestDto = new PoolRequestDto(
+                "my new pool",
+                expiredAt,
+                List.of(
+                        new PoolOptionRequestDto(""),
+                        new PoolOptionRequestDto(""),
+                        new PoolOptionRequestDto("option 3")));
+
+        // when
+        var responseEntity = restTemplate.postForEntity(
+                baseUrl() + POST_POOL_URL,
+                poolRequestDto,
+                ApplicationErrorResponse.class);
+
+        // then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().errors())
+                .containsExactlyInAnyOrder(
+                        new DetailedErrorResponse("001.002","Pool option description cannot be null"),
+                        new DetailedErrorResponse("001.002","Pool option description cannot be null"));
+    }
+
+    @DisplayName("Should not create a pool given invalid parameters pool options descriptions")
+    @Test
+    void shouldNotVoteGivenAPoolOptionThatDoesNotBelongToPool() {
+        // CREATE POOL
+        LocalDateTime expiredAt = LocalDateTime.now().plusDays(3);
+        PoolRequestDto poolRequestDto = new PoolRequestDto(
+                "my new pool",
+                expiredAt,
+                List.of(
+                        new PoolOptionRequestDto("option 1"),
+                        new PoolOptionRequestDto("option 2"),
+                        new PoolOptionRequestDto("option 3"),
+                        new PoolOptionRequestDto("option 4")));
+        URI createdPoolLocation = restTemplate.postForLocation(
+                baseUrl() + POST_POOL_URL,
+                poolRequestDto);
+        String urlPath = createdPoolLocation.getPath();
+        String poolId = urlPath.substring(urlPath.lastIndexOf("/") + 1);
+
+        // REGISTER VOTES
+        VoteRequestDto voteOne = new VoteRequestDto(1L);
+        ResponseEntity<ApplicationErrorResponse> responseEntity = restTemplate.postForEntity(
+                baseUrl() + "/api/v1/pools/%s/votes".formatted(poolId),
+                voteOne,
+                ApplicationErrorResponse.class);
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().errors())
+                .containsExactlyInAnyOrder(
+                        new DetailedErrorResponse("002.002", String.format("Option does not belong to Pool %s", poolId)));
+    }
+
     private void registerAmountOfVotes(int amount, String postId, Long poolOptionId) {
         VoteRequestDto voteOne = new VoteRequestDto(poolOptionId);
         List<CompletableFuture<URI>> all = new ArrayList<>();
@@ -174,7 +241,7 @@ public class IntegratedTest extends ApplicationTests {
 
         executorService.shutdown();
         while (!executorService.isTerminated()) {
-
+            //just wait for execution
         }
 
     }

@@ -1,9 +1,9 @@
-package com.grcp.demo.votingapp.vote.usecase;
+package com.grcp.demo.votingapp.vote.service;
 
 import com.grcp.demo.votingapp.pool.domain.Pool;
 import com.grcp.demo.votingapp.pool.domain.PoolId;
-import com.grcp.demo.votingapp.pool.usecase.PoolService;
-import com.grcp.demo.votingapp.shared.exception.BusinessException;
+import com.grcp.demo.votingapp.pool.service.PoolService;
+import com.grcp.demo.votingapp.shared.error.exception.BusinessException;
 import com.grcp.demo.votingapp.vote.domain.AggregatedVotingResult;
 import com.grcp.demo.votingapp.vote.domain.PoolOptionVotingResult;
 import com.grcp.demo.votingapp.vote.domain.Vote;
@@ -46,8 +46,7 @@ public class VoteService {
 
     public AggregatedVotingResult fetchAggregatedVotingResult(@Valid PoolId poolId) {
         poolService.validatePoolExists(poolId);
-        List<PoolOptionVotingResult> poolOptionResults = voteGateway.findPoolOptionVotingResultsByPoolId(
-                poolId);
+        List<PoolOptionVotingResult> poolOptionResults = voteGateway.findPoolOptionVotingResultsByPoolId(poolId);
         long totalPoolVotes = calculateTotalPoolVotes(poolOptionResults);
         List<VotingResult> votingResults = computeVotingResults(totalPoolVotes, poolOptionResults);
         return VoteMapper.toAggregatedVotingResult(totalPoolVotes, votingResults);
@@ -75,11 +74,11 @@ public class VoteService {
     private long calculateTotalPoolVotes(List<PoolOptionVotingResult> poolOptionVotingResults) {
         return poolOptionVotingResults.stream()
                 .map(PoolOptionVotingResult::totalVotes)
-                .mapToLong(Integer::longValue)
+                .mapToLong(Long::longValue)
                 .sum();
     }
 
-    private Double calculateSharedPoolOptionPercentage(long totalPoolVotes, Integer totalVotes) {
+    private Double calculateSharedPoolOptionPercentage(long totalPoolVotes, long totalVotes) {
         return BigDecimal.valueOf((totalVotes * PERCENTAGE_BASE) / Math.max(MIN_NUMBER_TO_DIVIDE, totalPoolVotes))
                 .setScale(2, RoundingMode.HALF_UP)
                 .doubleValue();

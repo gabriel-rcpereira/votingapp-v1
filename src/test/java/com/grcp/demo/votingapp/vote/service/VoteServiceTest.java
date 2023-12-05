@@ -1,12 +1,12 @@
-package com.grcp.demo.votingapp.vote.usecase;
+package com.grcp.demo.votingapp.vote.service;
 
 import com.grcp.demo.votingapp.config.ValidationAdvice;
 import com.grcp.demo.votingapp.pool.domain.Pool;
 import com.grcp.demo.votingapp.pool.domain.PoolId;
 import com.grcp.demo.votingapp.pool.domain.PoolOptionId;
 import com.grcp.demo.votingapp.pool.fixture.PoolFixture;
-import com.grcp.demo.votingapp.pool.usecase.PoolService;
-import com.grcp.demo.votingapp.shared.exception.BusinessException;
+import com.grcp.demo.votingapp.pool.service.PoolService;
+import com.grcp.demo.votingapp.shared.error.exception.BusinessException;
 import com.grcp.demo.votingapp.vote.domain.AggregatedVotingResult;
 import com.grcp.demo.votingapp.vote.domain.PoolOptionVotingResult;
 import com.grcp.demo.votingapp.vote.domain.Vote;
@@ -112,7 +112,7 @@ class VoteServiceTest {
             // when
             assertThatThrownBy(() -> voteService.registerNewVote(poolId, newVote))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessage("Pool already expired");
+                    .hasMessage("002.001");
 
             // then
             verify(poolService, times(1)).fetchPool(eq(poolId));
@@ -132,7 +132,7 @@ class VoteServiceTest {
             // when
             assertThatThrownBy(() -> voteService.registerNewVote(validPoolId, newVote))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessage(String.format("Option does not belong to Pool %s", validPoolId.value()));
+                    .hasMessage("002.002");
 
             // then
             verify(poolService, times(1)).fetchPool(eq(validPoolId));

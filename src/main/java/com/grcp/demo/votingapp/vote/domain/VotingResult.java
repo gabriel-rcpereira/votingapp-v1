@@ -5,6 +5,6 @@ import com.grcp.demo.votingapp.pool.domain.PoolOptionId;
 public record VotingResult(
         PoolOptionId poolOptionId,
         String description,
-        Integer totalVotes,
+        long totalVotes,
         Double percentage) {
 }

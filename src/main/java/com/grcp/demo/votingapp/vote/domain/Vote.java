@@ -4,7 +4,9 @@ import com.grcp.demo.votingapp.pool.domain.PoolOptionId;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
-public record Vote(@Valid @NotNull VoteId id, @Valid @NotNull PoolOptionId poolOptionId) {
+public record Vote(
+        @Valid @NotNull(message = "002.003") VoteId id,
+        @Valid @NotNull(message = "002.004") PoolOptionId poolOptionId) {
 
     public Vote(PoolOptionId poolOptionId) {
         this(VoteId.asNew(), poolOptionId);

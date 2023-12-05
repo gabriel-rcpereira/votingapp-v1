@@ -5,7 +5,7 @@ import com.grcp.demo.votingapp.pool.domain.PoolId;
 import com.grcp.demo.votingapp.pool.entrypoint.mapper.PoolDtoMapper;
 import com.grcp.demo.votingapp.pool.entrypoint.model.PoolRequestDto;
 import com.grcp.demo.votingapp.pool.entrypoint.model.PoolResponseDto;
-import com.grcp.demo.votingapp.pool.usecase.PoolService;
+import com.grcp.demo.votingapp.pool.service.PoolService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

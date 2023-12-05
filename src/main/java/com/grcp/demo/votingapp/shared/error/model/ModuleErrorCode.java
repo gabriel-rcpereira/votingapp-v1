@@ -1,4 +1,4 @@
-package com.grcp.demo.votingapp.shared.exception;
+package com.grcp.demo.votingapp.shared.error.model;
 
 import lombok.RequiredArgsConstructor;
 
