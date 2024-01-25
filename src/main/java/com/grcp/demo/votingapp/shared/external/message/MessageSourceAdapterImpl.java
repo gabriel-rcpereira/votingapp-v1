@@ -1,6 +1,6 @@
 package com.grcp.demo.votingapp.shared.external.message;
 
-import com.grcp.demo.votingapp.shared.service.MessageSourceService;
+import com.grcp.demo.votingapp.shared.service.MessageSourceAdapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
@@ -10,7 +10,7 @@ import java.util.Locale;
 
 @RequiredArgsConstructor
 @Service
-public class MessageSourceServiceImpl implements MessageSourceService {
+public class MessageSourceAdapterImpl implements MessageSourceAdapter {
 
     private final MessageSource messageSource;
 

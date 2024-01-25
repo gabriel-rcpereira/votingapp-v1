@@ -5,7 +5,7 @@ import com.grcp.demo.votingapp.shared.error.exception.BusinessException;
 import com.grcp.demo.votingapp.shared.error.exception.EntityNotFoundException;
 import com.grcp.demo.votingapp.shared.error.handler.model.ApplicationErrorResponse;
 import com.grcp.demo.votingapp.shared.error.handler.model.DetailedErrorResponse;
-import com.grcp.demo.votingapp.shared.service.MessageSourceService;
+import com.grcp.demo.votingapp.shared.service.MessageSourceAdapter;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ import java.util.List;
 public class GlobalExceptionHandler {
 
     @Autowired
-    private MessageSourceService messageSourceService;
+    private MessageSourceAdapter messageSourceAdapter;
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApplicationErrorResponse> handler(BusinessException ex) {
@@ -44,13 +44,13 @@ public class GlobalExceptionHandler {
     }
 
     private ApplicationErrorResponse toApplicationErrorResponse(BaseException ex) {
-        String message = messageSourceService.getMessage(ex.code(), ex.args());
+        String message = messageSourceAdapter.getMessage(ex.code(), ex.args());
         List<DetailedErrorResponse> errors = List.of(new DetailedErrorResponse(ex.code(), message));
         return new ApplicationErrorResponse(errors);
     }
 
     private DetailedErrorResponse toDetailedErrorResponse(ConstraintViolation<?> it) {
-        String message = messageSourceService.getMessage(it.getMessage());
+        String message = messageSourceAdapter.getMessage(it.getMessage());
         return new DetailedErrorResponse(it.getMessage(), message);
     }
 }

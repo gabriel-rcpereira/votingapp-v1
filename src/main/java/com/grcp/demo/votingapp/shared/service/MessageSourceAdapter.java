@@ -1,6 +1,6 @@
 package com.grcp.demo.votingapp.shared.service;
 
-public interface MessageSourceService {
+public interface MessageSourceAdapter {
 
     String getMessage(String code, Object...args);
 }
