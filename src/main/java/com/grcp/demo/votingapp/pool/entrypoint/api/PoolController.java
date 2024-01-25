@@ -31,13 +31,15 @@ public class PoolController {
         UriComponents uriComponents = UriComponentsBuilder
                 .fromPath("/api/v1/pools/{id}")
                 .buildAndExpand(pool.id().value());
-        return ResponseEntity.created(URI.create(uriComponents.toUriString())).build();
+        URI location = URI.create(uriComponents.toUriString());
+        return ResponseEntity.created(location).build();
     }
 
     @GetMapping("/api/v1/pools/{id}")
     public ResponseEntity<PoolResponseDto> getPool(@PathVariable("id") Long id) {
         PoolId typedId = new PoolId(id);
         Pool pool = poolService.fetchPool(typedId);
-        return ResponseEntity.ok(PoolDtoMapper.toResponse(pool));
+        PoolResponseDto poolResponseDto = PoolDtoMapper.toResponse(pool);
+        return ResponseEntity.ok(poolResponseDto);
     }
 }

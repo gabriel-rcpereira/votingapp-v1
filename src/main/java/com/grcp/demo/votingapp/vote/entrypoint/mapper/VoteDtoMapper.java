@@ -8,7 +8,15 @@ import com.grcp.demo.votingapp.vote.entrypoint.model.VotingResultResponseDto;
 import java.util.List;
 
 public class VoteDtoMapper {
-    public static AggregatedVotingResultResponseDto toAggregatedVotingResultResponseDto(
+
+    public static AggregatedVotingResultResponseDto toAggregatedVotingResultResponseDto(AggregatedVotingResult aggregatedVotingResult) {
+        List<VotingResultResponseDto> votingResultsResponse = toVotingResultsResponseDto(aggregatedVotingResult);
+        return VoteDtoMapper.toAggregatedVotingResultResponseDto(
+                aggregatedVotingResult,
+                votingResultsResponse);
+    }
+
+    private static AggregatedVotingResultResponseDto toAggregatedVotingResultResponseDto(
             AggregatedVotingResult aggregatedVotingResult,
             List<VotingResultResponseDto> votingResultsResponse) {
         return new AggregatedVotingResultResponseDto(
@@ -16,7 +24,7 @@ public class VoteDtoMapper {
                 votingResultsResponse);
     }
 
-    public static List<VotingResultResponseDto> toVotingResultsResponseDto(
+    private static List<VotingResultResponseDto> toVotingResultsResponseDto(
             AggregatedVotingResult aggregatedVotingResult) {
         return aggregatedVotingResult.votingResults().stream()
                 .map(VoteDtoMapper::toVotingResultResponseDto)

@@ -6,7 +6,6 @@ import com.grcp.demo.votingapp.vote.domain.AggregatedVotingResult;
 import com.grcp.demo.votingapp.vote.domain.Vote;
 import com.grcp.demo.votingapp.vote.entrypoint.model.AggregatedVotingResultResponseDto;
 import com.grcp.demo.votingapp.vote.entrypoint.model.VoteRequestDto;
-import com.grcp.demo.votingapp.vote.entrypoint.model.VotingResultResponseDto;
 import com.grcp.demo.votingapp.vote.service.VoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
-import static com.grcp.demo.votingapp.vote.entrypoint.mapper.VoteDtoMapper.*;
+import static com.grcp.demo.votingapp.vote.entrypoint.mapper.VoteDtoMapper.toAggregatedVotingResultResponseDto;
 
 @RequiredArgsConstructor
 @Validated
@@ -43,9 +40,8 @@ public class VoteController {
     public ResponseEntity<AggregatedVotingResultResponseDto> getVotes(@PathVariable("poolId") Long poolId) {
         PoolId typePoolId = new PoolId(poolId);
         AggregatedVotingResult aggregatedVotingResult = voteService.fetchAggregatedVotingResult(typePoolId);
-        List<VotingResultResponseDto> votingResultsResponse = toVotingResultsResponseDto(aggregatedVotingResult);
-        return ResponseEntity.ok(toAggregatedVotingResultResponseDto(
-                aggregatedVotingResult,
-                votingResultsResponse));
+        AggregatedVotingResultResponseDto aggregatedVotingResultResponseDto = toAggregatedVotingResultResponseDto(
+                aggregatedVotingResult);
+        return ResponseEntity.ok(aggregatedVotingResultResponseDto);
     }
 }
