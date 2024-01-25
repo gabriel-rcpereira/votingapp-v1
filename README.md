@@ -8,15 +8,14 @@ In addition to the requirements listed below, I'd like to give a chance to AI as
 - [x] Validate the domain and endpoint attributes according to their needs
 - [x] Replace the current exceptions with customized ones
 - [x] Handle the Pool and Pool Options according to the relation Aggregate and Aggregate Root
-  - I dropped this requirement. The adopted approach to maintain the relationship between both doesn't fit the application requirements.\
-  Spring Data deletes the aggregate and then recreates them again.
+  - I dropped this requirement. How Spring Data JDBC handles the aggregate and root relationship doesn't address the application requirements. In short, the aggregated items are deleted and recreated whenever it changes. 
 - [x] Implement the controller advice and define a well-structured error response.\
-The error message must contain the error code and details.\
-The http status response should follow the RestFul best practices.
+  - The error message must contain the error code and details.
+  - The http status response should follow the RestFul best practices.
 - [ ] Implement the unit tests
-  - This task was postponed. I implemented some unit tests by using AWS Code Whisperer and I got surprised how it incredibly works well.\
-  I'm still using the free version.
-- [ ] Refactor the Integration Tests
+  - I postponed this task. I implemented some unit tests by using AWS Code Whisperer and I got surprised how it incredibly works well.\
+  BTW, I'm still using the free version.
+- [x] Refactor the Integration Tests
 
 ## References
 - https://www.baeldung.com/javax-validation-method-constraints

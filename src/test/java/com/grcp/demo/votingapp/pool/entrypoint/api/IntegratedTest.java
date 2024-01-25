@@ -10,6 +10,7 @@ import com.grcp.demo.votingapp.shared.error.handler.model.DetailedErrorResponse;
 import com.grcp.demo.votingapp.vote.entrypoint.model.AggregatedVotingResultResponseDto;
 import com.grcp.demo.votingapp.vote.entrypoint.model.VoteRequestDto;
 import com.grcp.demo.votingapp.vote.entrypoint.model.VotingResultResponseDto;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
@@ -21,13 +22,10 @@ import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -123,13 +121,13 @@ public class IntegratedTest extends ApplicationTests {
 
         // REGISTER VOTES
         Long firstPoolOptionId = actualPoolResponse.options().get(0).id();
-        registerAmountOfVotes(numberOfVotesFirsOption, postId, firstPoolOptionId);
+        doVotes(numberOfVotesFirsOption, postId, firstPoolOptionId);
 
         Long secondPoolOptionId = actualPoolResponse.options().get(1).id();
-        registerAmountOfVotes(numberOfVotesSecondOption, postId, secondPoolOptionId);
+        doVotes(numberOfVotesSecondOption, postId, secondPoolOptionId);
 
         Long thirdPoolOptionId = actualPoolResponse.options().get(2).id();
-        registerAmountOfVotes(numberOfVotesThirdOption, postId, thirdPoolOptionId);
+        doVotes(numberOfVotesThirdOption, postId, thirdPoolOptionId);
 
         // FETCH POOL RESULT
         AggregatedVotingResultResponseDto aggregatedVotingResultResponse = restTemplate.getForObject(
@@ -223,31 +221,27 @@ public class IntegratedTest extends ApplicationTests {
                         new DetailedErrorResponse("002.002", String.format("Option does not belong to Pool %s", poolId)));
     }
 
-    private void registerAmountOfVotes(int amount, String postId, Long poolOptionId) {
-        VoteRequestDto voteOne = new VoteRequestDto(poolOptionId);
-        List<CompletableFuture<URI>> allCommands = new ArrayList<>();
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
-
-        for (int i = 0; i < amount; i++) {
-            CompletableFuture<URI> asyncRequest = CompletableFuture.supplyAsync(() ->
-                    restTemplate.postForLocation(
-                            baseUrl() + "/api/v1/pools/%s/votes".formatted(postId),
-                            voteOne),
-                    executorService);
-            allCommands.add(asyncRequest);
-        }
-
-        if (allCommands.isEmpty()) {
+    @SneakyThrows
+    private void doVotes(int amount, String poolId, Long poolOptionId) {
+        if (amount < 1) {
             return;
         }
 
+        VoteRequestDto voteRequest = new VoteRequestDto(poolOptionId);
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+        for (int i = 0; i < amount; i++) {
+            CompletableFuture.supplyAsync(() ->
+                            restTemplate.postForLocation(
+                                    baseUrl() + "/api/v1/pools/%s/votes".formatted(poolId),
+                                    voteRequest),
+                    executorService);
+        }
+
         executorService.shutdown();
-        try {
-            if (executorService.awaitTermination(3, TimeUnit.MINUTES)) {
-                System.out.println("Threads have terminated");
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+
+        if (executorService.awaitTermination(3, TimeUnit.MINUTES)) {
+            System.out.println("Threads have terminated");
         }
     }
 }
