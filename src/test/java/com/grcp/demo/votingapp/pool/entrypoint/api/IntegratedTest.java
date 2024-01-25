@@ -30,6 +30,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,6 +42,7 @@ public class IntegratedTest extends ApplicationTests {
     @DisplayName("Should create a pool successfully given valid parameters")
     @RepeatedTest(3)
     void shouldCreateSuccessfullyGivenValidParameters() {
+        // given
         LocalDateTime expiredAt = LocalDateTime.now().plusDays(3);
         PoolRequestDto poolRequestDto = new PoolRequestDto(
                 "my new pool",
@@ -52,7 +54,6 @@ public class IntegratedTest extends ApplicationTests {
         URI createdPoolLocation = restTemplate.postForLocation(
                 baseUrl() + POST_POOL_URL,
                 poolRequestDto);
-        Assertions.assertNotNull(createdPoolLocation.getPath());
 
         String urlPath = createdPoolLocation.getPath();
         String postId = urlPath.substring(urlPath.lastIndexOf("/") + 1);
@@ -66,11 +67,12 @@ public class IntegratedTest extends ApplicationTests {
                         new PoolOptionResponseDto(1L, "option 2"),
                         new PoolOptionResponseDto(1L, "option 3")));
 
+        // when
         PoolResponseDto actualPoolResponse = restTemplate.getForObject(
                 baseUrl() + GET_POOL_URL.formatted(postId),
                 PoolResponseDto.class);
-        Assertions.assertNotNull(actualPoolResponse);
 
+        // then
         assertThat(actualPoolResponse)
                 .usingRecursiveComparison()
                 .ignoringFields("expiredAt", "options")
@@ -223,7 +225,7 @@ public class IntegratedTest extends ApplicationTests {
 
     private void registerAmountOfVotes(int amount, String postId, Long poolOptionId) {
         VoteRequestDto voteOne = new VoteRequestDto(poolOptionId);
-        List<CompletableFuture<URI>> all = new ArrayList<>();
+        List<CompletableFuture<URI>> allCommands = new ArrayList<>();
         ExecutorService executorService = Executors.newFixedThreadPool(10);
 
         for (int i = 0; i < amount; i++) {
@@ -232,17 +234,20 @@ public class IntegratedTest extends ApplicationTests {
                             baseUrl() + "/api/v1/pools/%s/votes".formatted(postId),
                             voteOne),
                     executorService);
-            all.add(asyncRequest);
+            allCommands.add(asyncRequest);
         }
 
-        if (all.isEmpty()) {
+        if (allCommands.isEmpty()) {
             return;
         }
 
         executorService.shutdown();
-        while (!executorService.isTerminated()) {
-            //just wait for execution
+        try {
+            if (executorService.awaitTermination(3, TimeUnit.MINUTES)) {
+                System.out.println("Threads have terminated");
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-
     }
 }

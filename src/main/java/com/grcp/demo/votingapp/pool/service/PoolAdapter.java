@@ -1,13 +1,11 @@
-package com.grcp.demo.votingapp.pool.gateway;
+package com.grcp.demo.votingapp.pool.service;
 
 import com.grcp.demo.votingapp.pool.domain.Pool;
 import com.grcp.demo.votingapp.pool.domain.PoolId;
-import com.grcp.demo.votingapp.pool.domain.PoolOption;
 
-import java.util.List;
 import java.util.Optional;
 
-public interface PoolGateway {
+public interface PoolAdapter {
 
     void savePool(Pool pool);
 

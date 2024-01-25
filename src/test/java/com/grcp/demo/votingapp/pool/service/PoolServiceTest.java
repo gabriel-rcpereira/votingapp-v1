@@ -5,14 +5,9 @@ import com.grcp.demo.votingapp.pool.domain.Pool;
 import com.grcp.demo.votingapp.pool.domain.PoolId;
 import com.grcp.demo.votingapp.pool.domain.PoolOption;
 import com.grcp.demo.votingapp.pool.domain.PoolOptionId;
-import com.grcp.demo.votingapp.pool.gateway.PoolGateway;
 import com.grcp.demo.votingapp.shared.error.exception.EntityNotFoundException;
-import com.grcp.demo.votingapp.vote.service.VoteService;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Valid;
-import org.assertj.core.api.AbstractThrowableAssert;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -30,12 +25,12 @@ import static org.mockito.Mockito.mock;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PoolServiceTest {
 
-    private final PoolGateway poolGateway = mock();
+    private final PoolAdapter poolAdapter = mock();
     private PoolService poolService;
 
     @BeforeAll
     void beforeAll() {
-        ProxyFactory serviceProxyFactory = new ProxyFactory(new PoolService(poolGateway));
+        ProxyFactory serviceProxyFactory = new ProxyFactory(new PoolService(poolAdapter));
         serviceProxyFactory.addAdvice(new ValidationAdvice());
         poolService = (PoolService) serviceProxyFactory.getProxy();
     }
@@ -50,7 +45,7 @@ class PoolServiceTest {
             var poolOption = new PoolOption(PoolOptionId.asNew(), "option 1", poolId);
             var mockedPool = new Pool(poolId, "mocked pool", LocalDateTime.now().plusDays(3), List.of(poolOption));
 
-            given(poolGateway.findPoolById(poolId)).willReturn(Optional.of(mockedPool));
+            given(poolAdapter.findPoolById(poolId)).willReturn(Optional.of(mockedPool));
 
             // when
             var actualPool = poolService.fetchPool(poolId);
@@ -64,7 +59,7 @@ class PoolServiceTest {
             // given
             var invalidPoolId = PoolId.asNew();
 
-            given(poolGateway.findPoolById(invalidPoolId)).willReturn(Optional.empty());
+            given(poolAdapter.findPoolById(invalidPoolId)).willReturn(Optional.empty());
 
             // when
             var actual = assertThatThrownBy(() -> poolService.fetchPool(invalidPoolId));

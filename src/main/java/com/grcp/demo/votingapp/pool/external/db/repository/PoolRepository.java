@@ -1,6 +1,6 @@
-package com.grcp.demo.votingapp.pool.gateway.db.repository;
+package com.grcp.demo.votingapp.pool.external.db.repository;
 
-import com.grcp.demo.votingapp.pool.gateway.db.entity.PoolEntity;
+import com.grcp.demo.votingapp.pool.external.db.entity.PoolEntity;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

@@ -9,7 +9,6 @@ import com.grcp.demo.votingapp.vote.domain.PoolOptionVotingResult;
 import com.grcp.demo.votingapp.vote.domain.Vote;
 import com.grcp.demo.votingapp.vote.domain.VotingResult;
 import com.grcp.demo.votingapp.vote.domain.error.VoteError;
-import com.grcp.demo.votingapp.vote.gateway.VoteGateway;
 import com.grcp.demo.votingapp.vote.mapper.VoteMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +27,7 @@ public class VoteService {
     private static final double PERCENTAGE_BASE = 100.0;
     private static final int MIN_NUMBER_TO_DIVIDE = 1;
 
-    private final VoteGateway voteGateway;
+    private final VoteAdapter voteAdapter;
     private final PoolService poolService;
 
     public void registerNewVote(@Valid PoolId poolId, @Valid Vote vote) {
@@ -41,12 +40,12 @@ public class VoteService {
             throw new BusinessException(VoteError.OPTION_DOES_NOT_BELONG_TO_POOL, poolId.value());
         }
 
-        voteGateway.saveVote(vote);
+        voteAdapter.saveVote(vote);
     }
 
     public AggregatedVotingResult fetchAggregatedVotingResult(@Valid PoolId poolId) {
         poolService.validatePoolExists(poolId);
-        List<PoolOptionVotingResult> poolOptionResults = voteGateway.findPoolOptionVotingResultsByPoolId(poolId);
+        List<PoolOptionVotingResult> poolOptionResults = voteAdapter.findPoolOptionVotingResultsByPoolId(poolId);
         long totalPoolVotes = calculateTotalPoolVotes(poolOptionResults);
         List<VotingResult> votingResults = computeVotingResults(totalPoolVotes, poolOptionResults);
         return VoteMapper.toAggregatedVotingResult(totalPoolVotes, votingResults);

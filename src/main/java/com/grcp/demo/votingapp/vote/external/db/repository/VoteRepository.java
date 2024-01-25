@@ -1,7 +1,7 @@
-package com.grcp.demo.votingapp.vote.gateway.db.repository;
+package com.grcp.demo.votingapp.vote.external.db.repository;
 
-import com.grcp.demo.votingapp.vote.gateway.db.entity.VoteEntity;
-import com.grcp.demo.votingapp.vote.gateway.db.view.VotingResultView;
+import com.grcp.demo.votingapp.vote.external.db.entity.VoteEntity;
+import com.grcp.demo.votingapp.vote.external.db.view.VotingResultView;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;

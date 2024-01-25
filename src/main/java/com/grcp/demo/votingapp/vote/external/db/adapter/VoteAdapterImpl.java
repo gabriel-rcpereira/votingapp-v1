@@ -1,12 +1,12 @@
-package com.grcp.demo.votingapp.vote.gateway.db.adapter;
+package com.grcp.demo.votingapp.vote.external.db.adapter;
 
 import com.grcp.demo.votingapp.pool.domain.PoolId;
 import com.grcp.demo.votingapp.pool.domain.PoolOptionId;
 import com.grcp.demo.votingapp.vote.domain.Vote;
 import com.grcp.demo.votingapp.vote.domain.PoolOptionVotingResult;
-import com.grcp.demo.votingapp.vote.gateway.VoteGateway;
-import com.grcp.demo.votingapp.vote.gateway.db.entity.VoteEntity;
-import com.grcp.demo.votingapp.vote.gateway.db.repository.VoteRepository;
+import com.grcp.demo.votingapp.vote.service.VoteAdapter;
+import com.grcp.demo.votingapp.vote.external.db.entity.VoteEntity;
+import com.grcp.demo.votingapp.vote.external.db.repository.VoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Component
-public class VoteGatewayAdapter implements VoteGateway {
+public class VoteAdapterImpl implements VoteAdapter {
 
     private final VoteRepository voteRepository;
 

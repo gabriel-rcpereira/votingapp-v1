@@ -1,14 +1,14 @@
-package com.grcp.demo.votingapp.pool.gateway.db.adapter;
+package com.grcp.demo.votingapp.pool.external.db.adapter;
 
 import com.grcp.demo.votingapp.pool.domain.Pool;
 import com.grcp.demo.votingapp.pool.domain.PoolId;
 import com.grcp.demo.votingapp.pool.domain.PoolOption;
 import com.grcp.demo.votingapp.pool.domain.PoolOptionId;
-import com.grcp.demo.votingapp.pool.gateway.PoolGateway;
-import com.grcp.demo.votingapp.pool.gateway.db.entity.PoolEntity;
-import com.grcp.demo.votingapp.pool.gateway.db.entity.PoolOptionEntity;
-import com.grcp.demo.votingapp.pool.gateway.db.repository.PoolOptionRepository;
-import com.grcp.demo.votingapp.pool.gateway.db.repository.PoolRepository;
+import com.grcp.demo.votingapp.pool.service.PoolAdapter;
+import com.grcp.demo.votingapp.pool.external.db.entity.PoolEntity;
+import com.grcp.demo.votingapp.pool.external.db.entity.PoolOptionEntity;
+import com.grcp.demo.votingapp.pool.external.db.repository.PoolOptionRepository;
+import com.grcp.demo.votingapp.pool.external.db.repository.PoolRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Component
-public class PoolGatewayAdapter implements PoolGateway {
+public class PoolAdapterImpl implements PoolAdapter {
 
     private final PoolRepository poolRepository;
 
@@ -33,7 +33,7 @@ public class PoolGatewayAdapter implements PoolGateway {
     @Override
     public Optional<Pool> findPoolById(PoolId id) {
         return poolRepository.findById(id.value())
-                .map(PoolGatewayAdapter::toDomain)
+                .map(PoolAdapterImpl::toDomain)
                 .map(it -> {
                     List<PoolOption> poolOptions = findPoolOptionsByPoolId(id);
                     return toDomain(it, poolOptions);
@@ -42,7 +42,7 @@ public class PoolGatewayAdapter implements PoolGateway {
 
     private List<PoolOption> findPoolOptionsByPoolId(PoolId id) {
         return poolOptionRepository.findByPoolId(id.value()).stream()
-                .map(PoolGatewayAdapter::toDomain)
+                .map(PoolAdapterImpl::toDomain)
                 .toList();
     }
 

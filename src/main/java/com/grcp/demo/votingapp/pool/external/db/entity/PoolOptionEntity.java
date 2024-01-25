@@ -1,4 +1,4 @@
-package com.grcp.demo.votingapp.vote.gateway.db.entity;
+package com.grcp.demo.votingapp.pool.external.db.entity;
 
 import lombok.Builder;
 import lombok.Data;
@@ -7,13 +7,14 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Builder
+@Table("POOL_OPTION")
 @Data
-@Table("VOTE")
-public class VoteEntity {
+public class PoolOptionEntity {
 
     @Id
     private Long id;
-    private Long poolOptionId;
+    private String description;
+    private Long poolId;
     @Version
     private Integer version;
 }

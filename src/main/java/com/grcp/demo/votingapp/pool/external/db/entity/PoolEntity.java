@@ -1,4 +1,4 @@
-package com.grcp.demo.votingapp.pool.gateway.db.entity;
+package com.grcp.demo.votingapp.pool.external.db.entity;
 
 import lombok.Builder;
 import lombok.Data;

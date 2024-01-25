@@ -12,7 +12,6 @@ import com.grcp.demo.votingapp.vote.domain.PoolOptionVotingResult;
 import com.grcp.demo.votingapp.vote.domain.Vote;
 import com.grcp.demo.votingapp.vote.domain.VotingResult;
 import com.grcp.demo.votingapp.vote.fixture.VoteFixture;
-import com.grcp.demo.votingapp.vote.gateway.VoteGateway;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -38,13 +37,13 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 class VoteServiceTest {
 
-    private final VoteGateway voteGateway = mock(VoteGateway.class);
+    private final VoteAdapter voteAdapter = mock(VoteAdapter.class);
     private final PoolService poolService = mock(PoolService.class);
     private VoteService voteService;
 
     @BeforeEach
     void setUp() {
-        ProxyFactory serviceProxyFactory = new ProxyFactory(new VoteService(voteGateway, poolService));
+        ProxyFactory serviceProxyFactory = new ProxyFactory(new VoteService(voteAdapter, poolService));
         serviceProxyFactory.addAdvice(new ValidationAdvice());
         voteService = (VoteService) serviceProxyFactory.getProxy();
     }
@@ -61,16 +60,16 @@ class VoteServiceTest {
             Pool mockedPool = PoolFixture.validPool(votedPoolOptionId, poolId);
 
             given(poolService.fetchPool(any(PoolId.class))).willReturn(mockedPool);
-            doNothing().when(voteGateway).saveVote(any(Vote.class));
+            doNothing().when(voteAdapter).saveVote(any(Vote.class));
 
             // when
             voteService.registerNewVote(poolId, newVote);
 
             // then
-            InOrder inOrder = inOrder(poolService, voteGateway);
+            InOrder inOrder = inOrder(poolService, voteAdapter);
 
             inOrder.verify(poolService, times(1)).fetchPool(eq(poolId));
-            inOrder.verify(voteGateway, times(1)).saveVote(eq(newVote));
+            inOrder.verify(voteAdapter, times(1)).saveVote(eq(newVote));
         }
 
         @Test
@@ -84,7 +83,7 @@ class VoteServiceTest {
                     .isInstanceOf(ConstraintViolationException.class);
 
             // then
-            verifyNoInteractions(poolService, voteGateway);
+            verifyNoInteractions(poolService, voteAdapter);
         }
 
         @Test
@@ -96,7 +95,7 @@ class VoteServiceTest {
                     .isInstanceOf(ConstraintViolationException.class);
 
             // then
-            verifyNoInteractions(poolService, voteGateway);
+            verifyNoInteractions(poolService, voteAdapter);
         }
 
         @Test
@@ -116,7 +115,7 @@ class VoteServiceTest {
 
             // then
             verify(poolService, times(1)).fetchPool(eq(poolId));
-            verify(voteGateway, never()).saveVote(eq(newVote));
+            verify(voteAdapter, never()).saveVote(eq(newVote));
         }
 
         @Test
@@ -136,7 +135,7 @@ class VoteServiceTest {
 
             // then
             verify(poolService, times(1)).fetchPool(eq(validPoolId));
-            verify(voteGateway, never()).saveVote(eq(newVote));
+            verify(voteAdapter, never()).saveVote(eq(newVote));
         }
     }
 
@@ -156,16 +155,16 @@ class VoteServiceTest {
                     new PoolOptionVotingResult(votedPoolOptionId3, "option 3", 5));
 
             doNothing().when(poolService).validatePoolExists(any(PoolId.class));
-            given(voteGateway.findPoolOptionVotingResultsByPoolId(any(PoolId.class))).willReturn(poolOptionVotingResults);
+            given(voteAdapter.findPoolOptionVotingResultsByPoolId(any(PoolId.class))).willReturn(poolOptionVotingResults);
 
             // when
             AggregatedVotingResult aggregatedVotingResult = voteService.fetchAggregatedVotingResult(poolId);
 
             // then
-            InOrder inOrder = inOrder(poolService, voteGateway);
+            InOrder inOrder = inOrder(poolService, voteAdapter);
 
             inOrder.verify(poolService, times(1)).validatePoolExists(eq(poolId));
-            inOrder.verify(voteGateway, times(1)).findPoolOptionVotingResultsByPoolId(eq(poolId));
+            inOrder.verify(voteAdapter, times(1)).findPoolOptionVotingResultsByPoolId(eq(poolId));
 
             assertThat(aggregatedVotingResult.totalPoolVotes()).isEqualTo(20);
             assertThat(aggregatedVotingResult.votingResults())
@@ -186,7 +185,7 @@ class VoteServiceTest {
                     .isInstanceOf(ConstraintViolationException.class);
 
             // then
-            verifyNoInteractions(poolService, voteGateway);
+            verifyNoInteractions(poolService, voteAdapter);
         }
 
         @Test
@@ -200,7 +199,7 @@ class VoteServiceTest {
             assertThatThrownBy(() -> voteService.fetchAggregatedVotingResult(poolId))
                     .isInstanceOf(RuntimeException.class);
 
-            verifyNoInteractions(voteGateway);
+            verifyNoInteractions(voteAdapter);
         }
 
         @Test
@@ -209,7 +208,7 @@ class VoteServiceTest {
             PoolId poolId = PoolId.asNew();
 
             doNothing().when(poolService).validatePoolExists(any(PoolId.class));
-            given(voteGateway.findPoolOptionVotingResultsByPoolId(eq(poolId))).willReturn(List.of());
+            given(voteAdapter.findPoolOptionVotingResultsByPoolId(eq(poolId))).willReturn(List.of());
 
             // when
             AggregatedVotingResult aggregatedVotingResult = voteService.fetchAggregatedVotingResult(poolId);
@@ -230,7 +229,7 @@ class VoteServiceTest {
                     new PoolOptionVotingResult(votedPoolOptionId2, "option 2", 0));
 
             doNothing().when(poolService).validatePoolExists(any(PoolId.class));
-            given(voteGateway.findPoolOptionVotingResultsByPoolId(eq(poolId))).willReturn(poolOptionVotingResults);
+            given(voteAdapter.findPoolOptionVotingResultsByPoolId(eq(poolId))).willReturn(poolOptionVotingResults);
 
             // when
             AggregatedVotingResult aggregatedVotingResult = voteService.fetchAggregatedVotingResult(poolId);
@@ -257,7 +256,7 @@ class VoteServiceTest {
                     new PoolOptionVotingResult(votedPoolOptionId3, "option 3", 5));
 
             doNothing().when(poolService).validatePoolExists(any(PoolId.class));
-            given(voteGateway.findPoolOptionVotingResultsByPoolId(eq(poolId))).willReturn(poolOptionVotingResults);
+            given(voteAdapter.findPoolOptionVotingResultsByPoolId(eq(poolId))).willReturn(poolOptionVotingResults);
 
             // when
             AggregatedVotingResult aggregatedVotingResult = voteService.fetchAggregatedVotingResult(poolId);
