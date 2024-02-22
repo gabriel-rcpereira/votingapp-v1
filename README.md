@@ -21,3 +21,16 @@ In addition to the requirements listed below, I'd like to give a chance to AI as
 - https://www.baeldung.com/javax-validation-method-constraints
 - https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-builtin-method-constraints
 - https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-validating-executable-constraints
+
+# VoteApp #3 Round
+Take a look at the main [README](https://github.com/gabriel-rcpereira/votingapp-v1).
+
+## Requirements
+
+- [ ] Provision the Docker Container Postgres
+- [ ] Create the database tables with Flyway/Liquibase
+- [ ] Create the service image, docker compose, etc. Set the same settings for the resource as the backend contest(rinha de backend)
+- [ ] Create the Performance Tests
+
+## References
+- ?
