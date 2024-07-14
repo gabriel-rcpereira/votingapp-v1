@@ -27,10 +27,10 @@ Take a look at the main [README](https://github.com/gabriel-rcpereira/votingapp-
 
 ## Requirements
 
-- [ ] Provision the Docker Container Postgres
-- [ ] Create the database tables with Flyway/Liquibase
-- [ ] Create the service image, docker compose, etc. Set the same settings for the resource as the backend contest(rinha de backend)
-- [ ] Create the Performance Tests
+- [ ] Provision Postgres with Docker
+- [ ] Create database tables with Flyway/Liquibase
+- [ ] Create service image, docker compose, etc. Set the same settings for the resource as the backend contest(rinha de backend)
+- [x] Create Performance Tests
 
 ## References
-- ?
+- https://docs.gatling.io/
