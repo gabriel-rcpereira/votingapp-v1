@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  vote-app:
+    image: vote-app
+    ports:
+      - "8080:8080"
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=dev # Optional: if you need to set active Spring profiles or any other environment variables
+    mem_limit: 1g
+    cpus: '1.0'
+    networks:
+      - vote-network
+
+networks:
+  vote-network:
+    driver: bridge
